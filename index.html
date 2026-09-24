@@ -50,7 +50,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15p
 
 /* Établi */
 .bench{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:14px}
-.benchhead{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px 24px;align-items:center}
+.benchhead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;align-items:center}
+.benchhead .tools{grid-column:1/-1;justify-content:flex-start;border-top:1px solid var(--line);padding-top:10px}
 @media (max-width:900px){.benchhead{grid-template-columns:minmax(0,1fr)}}
 .itemhead{display:flex;gap:12px;align-items:center;min-width:0}
 .itemhead img{width:64px;height:64px;object-fit:contain;background:var(--surface-2);border-radius:8px;padding:4px;flex:none}
@@ -109,8 +110,20 @@ button.x{padding:2px 8px;color:var(--muted);background:transparent;border-color:
 .chip.acc{background:var(--accent);color:var(--accent-ink)}
 .foot{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;font-size:13.5px}
 .lossline{color:var(--bad);font-weight:600}
+.explain{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:start;border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:14px}
+.explain .t{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;white-space:nowrap;padding-top:2px}
+@media (max-width:640px){.explain{grid-template-columns:minmax(0,1fr) auto}.explain .t{grid-column:1/-1}}
+.warn-line{display:block;font-size:12px;color:var(--bad);margin-top:2px}
+th[title]{cursor:help;text-decoration:underline dotted;text-underline-offset:3px}
+.lib{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.lib select{max-width:200px}
+.shop td,.shop th{padding:5px 6px;white-space:nowrap}
+.shop input{width:90px}
+.kpis{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;margin-top:8px}
+.kpis b{font-family:var(--mono);font-weight:500}
 
 .lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.lower>details:last-child{grid-column:1/-1}
 @media (max-width:900px){.lower{grid-template-columns:minmax(0,1fr)}}
 details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
 details summary{font-family:var(--display);font-size:15px;cursor:pointer;letter-spacing:.03em}
@@ -146,20 +159,26 @@ details dd{margin:2px 0 0;max-width:75ch}
         <input type="number" class="big" id="puitsInput" step="0.01" min="0" title="Corrige à la main si le jeu indique un autre reliquat">
         <div class="exo" id="exo"></div>
       </div>
-      <div class="row">
+      <div class="row tools">
         <button type="button" id="btnUndo">↶ Annuler le dernier</button>
         <button type="button" class="ghost" id="btnSample">Exemple</button>
         <button type="button" class="ghost" id="btnClear">Vider</button>
+        <span class="lib">
+          <select id="libSelect" aria-label="Mes objets enregistrés"></select>
+          <button type="button" class="ghost" id="btnSaveItem" title="Garde cet objet pour y revenir plus tard">Enregistrer l'objet</button>
+          <button type="button" class="x" id="btnDelItem" title="Supprimer l'objet choisi de la liste" aria-label="Supprimer l'objet enregistré">✕</button>
+        </span>
       </div>
     </div>
 
     <div class="reco" id="pick"></div>
+    <div class="explain" id="explain" hidden><span class="t">Ce qui vient de se passer</span><span id="explainText"></span><button type="button" class="x" id="btnExplainClose" aria-label="Fermer l'explication">✕</button></div>
 
     <p class="howto"><b>1.</b> Passe en jeu la rune indiquée sur la ligne. <b>2.</b> Si des stats ont baissé, note les points perdus dans la colonne « Perte » de ces lignes. <b>3.</b> Clique sur <b>SC</b>, <b>SN</b> ou <b>EC</b> sur la ligne de la rune passée.</p>
 
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Caractéristique</th><th>Actuel</th><th>Max</th><th>Progression</th><th>Rune à passer</th><th>Perte</th><th>Résultat</th><th></th></tr></thead>
+        <thead><tr><th>Caractéristique</th><th title="La valeur que ton objet a en ce moment">Actuel</th><th title="Le jet maximum normal de l'objet. Au-dessus, c'est de l'overmax">Max</th><th>Progression</th><th title="★ = rune conseillée. « puits OK » : ton puits couvre son poids, tu ne devrais rien perdre sur un SN">Rune à passer</th><th title="Les points que cette ligne a perdus pendant le dernier passage">Perte</th><th title="SC = succès critique · SN = succès neutre · EC = échec critique">Résultat</th><th></th></tr></thead>
         <tbody id="itemBody"></tbody>
       </table>
     </div>
@@ -177,8 +196,19 @@ details dd{margin:2px 0 0;max-width:75ch}
   <div class="lower">
     <details open>
       <summary>Historique</summary>
-      <p class="empty" id="histStats" style="margin-top:8px"></p>
+      <div class="kpis" id="histStats"></div>
       <div class="hist" id="hist"></div>
+    </details>
+    <details open>
+      <summary>Liste de courses</summary>
+      <p class="empty" style="margin-top:8px">Les runes à acheter pour finir le jet parfait. On compte environ 2 runes par passage réussi, à cause des échecs. Entre les prix de ton hôtel des ventes pour estimer le budget.</p>
+      <div class="tablewrap" style="margin-top:8px">
+        <table class="shop">
+          <thead><tr><th>Rune</th><th title="Nombre de passages réussis nécessaires">Réussites</th><th title="Avec une marge pour les échecs">À prévoir</th><th>Prix / u</th><th>Total</th></tr></thead>
+          <tbody id="shopBody"></tbody>
+        </table>
+      </div>
+      <div class="kpis" id="shopTotals"></div>
     </details>
     <details>
       <summary>Comprendre la forgemagie en 2 minutes</summary>
@@ -265,6 +295,13 @@ let state = fresh();
 try { const s = JSON.parse(localStorage.getItem('forgemagie-v2')); if (s && Array.isArray(s.lines)) state = s; } catch(e) {}
 const save = () => { try { localStorage.setItem('forgemagie-v2', JSON.stringify(state)); } catch(e) {} };
 let pending = {}; // pertes saisies, par index de ligne
+let prices = {};  // prix des runes (kamas), communs à tous les objets
+try { prices = JSON.parse(localStorage.getItem('forgemagie-prix')) || {}; } catch(e) {}
+const savePrices = () => { try { localStorage.setItem('forgemagie-prix', JSON.stringify(prices)); } catch(e) {} };
+let library = [];
+try { library = JSON.parse(localStorage.getItem('forgemagie-objets')) || []; } catch(e) {}
+const saveLib = () => { try { localStorage.setItem('forgemagie-objets', JSON.stringify(library)); } catch(e) {} };
+const kamas = n => Math.round(n).toLocaleString('fr-FR') + ' k';
 
 const $ = id => document.getElementById(id);
 const fmt = n => (Math.round(n*100)/100).toLocaleString('fr-FR');
@@ -311,9 +348,9 @@ function renderHead(){
 }
 
 function renderTable(best){
-  const body = $('itemBody');
-  if (!state.lines.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Aucune ligne. Cherche un objet en haut, ou ajoute des lignes à la main ci-dessous.</td></tr>'; }
-  else body.innerHTML = state.lines.map((l,i) => {
+  const tb = $('itemBody');
+  if (!state.lines.length) { tb.innerHTML = '<tr><td colspan="8" class="empty">Aucune ligne. Cherche un objet en haut, ou ajoute des lignes à la main ci-dessous.</td></tr>'; }
+  else tb.innerHTML = state.lines.map((l,i) => {
     const s = S[l.id], { i:ri, W } = runeOf(l), adv = advisedIdx(l);
     const pct = l.max > 0 ? Math.min(100, l.cur / l.max * 100) : 100;
     const over = l.max > 0 && l.cur > l.max;
@@ -326,6 +363,10 @@ function renderTable(best){
     if (l.max > 0 && l.cur < l.max) { const m = l.max - l.cur, n = Math.ceil(m / s.runes[ri].v); adv2 = `reste ${fmt(m)} · ~${n} passage${n>1?'s':''}`; }
     else if (l.max <= 0) adv2 = 'ligne exo';
     else adv2 = 'au max : une rune ici = overmax';
+    let warnTxt = '';
+    if (l.max <= 0 && !covered) warnTxt = `Exo sans puits suffisant (${fmt(state.puits)}/${fmt(W)}) : ça rate presque toujours et casse d'autres lignes.`;
+    else if (!covered && W >= 10) warnTxt = `Rune lourde (poids ${fmt(W)}) sans puits : risque de casser plusieurs lignes.`;
+    else if (l.max > 0 && l.cur + s.runes[ri].v > l.max) warnTxt = `Cette rune dépasse le max de ${fmt(l.cur + s.runes[ri].v - l.max)} : c'est de l'overmax, plus dur à passer.`;
     const opts = s.runes.map((r,k) => `<option value="${k}" ${k===ri?'selected':''}>${esc(r.n)} +${r.v} · poids ${fmt(r.v*s.w)}${k===adv && l.max>0 && l.cur<l.max?' ★':''}</option>`).join('');
     return `<tr class="${best && best.li===i ? 'picked' : ''}">
       <td class="stat"><b>${esc(s.name)}</b> ${chip}${best && best.li===i ? ' <span class="chip acc">conseillé</span>' : ''}<span class="range">${l.min != null ? `jet ${fmt(l.min)} à ${fmt(l.max)} · ` : ''}poids ${fmt(l.cur*s.w)}</span></td>
@@ -333,7 +374,7 @@ function renderTable(best){
       <td><input type="number" id="max-${i}" data-i="${i}" data-k="max" value="${l.max}" aria-label="${esc(s.name)} max"></td>
       <td><div class="bar"><span class="${over?'over':''}" style="width:${pct}%"></span></div></td>
       <td class="rune"><select id="rune-${i}" data-rune="${i}" aria-label="Rune pour ${esc(s.name)}">${opts}</select>
-        <span class="adv"><span class="chip ${covered?'ok':'warn'}">${covered?'puits OK':'risque'}</span> ${adv2}</span></td>
+        <span class="adv"><span class="chip ${covered?'ok':'warn'}">${covered?'puits OK':'risque'}</span> ${adv2}</span>${warnTxt ? `<span class="warn-line">⚠ ${warnTxt}</span>` : ''}</td>
       <td><input type="number" class="loss" min="0" placeholder="0" id="loss-${i}" data-loss="${i}" value="${pending[i] || ''}" aria-label="Points perdus en ${esc(s.name)}"></td>
       <td><div class="oc">
         <button type="button" class="sc" data-oc="sc" data-i="${i}" title="Succès critique : la stat monte, rien ne baisse">SC</button>
@@ -364,14 +405,43 @@ function renderFoot(){
 }
 function renderHist(){
   const h = state.hist, n = {sc:0,sn:0,ec:0}; h.forEach(e=>n[e.oc]++);
-  $('histStats').textContent = h.length ? `${h.length} rune${h.length>1?'s':''} : ${n.sc} SC, ${n.sn} SN, ${n.ec} EC.` : 'Les runes que tu passes apparaîtront ici.';
+  const pc = k => Math.round(n[k] / h.length * 100) + ' %';
+  const spent = h.reduce((a,e) => a + (e.cost || 0), 0);
+  $('histStats').innerHTML = h.length
+    ? `<span>Runes : <b>${h.length}</b></span><span style="color:var(--ok)">SC <b>${pc('sc')}</b></span><span style="color:var(--warn)">SN <b>${pc('sn')}</b></span><span style="color:var(--bad)">EC <b>${pc('ec')}</b></span>${spent ? `<span>Dépensé : <b>${kamas(spent)}</b></span>` : ''}`
+    : '<span class="muted">Les runes que tu passes apparaîtront ici, avec ton taux de réussite.</span>';
   const lbl = {sc:'ok',sn:'warn',ec:'bad'};
   $('hist').innerHTML = h.slice().reverse().map(e => `<div><span><span class="chip ${lbl[e.oc]}">${e.oc.toUpperCase()}</span> ${esc(e.rune)}${e.lossTxt?' <span class="muted">· '+esc(e.lossTxt)+'</span>':''}</span><span class="num muted">puits ${fmt(e.puits)}</span></div>`).join('');
+}
+function renderShop(){
+  const need = {};
+  state.lines.forEach(l => {
+    if (!(l.max > 0 && l.cur < l.max)) return;
+    const s = S[l.id]; let m = l.max - l.cur;
+    // découpe ce qu'il manque en runes, de la plus grosse à la plus petite, sans dépasser le max
+    for (let k = s.runes.length - 1; k >= 0; k--) {
+      const r = s.runes[k], c = Math.floor(m / r.v);
+      if (c > 0) { need[r.n] = (need[r.n] || 0) + c; m -= c * r.v; }
+    }
+    if (m > 0) need[s.runes[0].n] = (need[s.runes[0].n] || 0) + 1;
+  });
+  const rows = Object.entries(need);
+  let total = 0;
+  $('shopBody').innerHTML = rows.length ? rows.map(([n,c],k) => {
+    const buy = c * 2, p = prices[n] || 0; total += buy * p;
+    return `<tr><td>${esc(n)}</td><td class="num">${c}</td><td class="num">${buy}</td>
+      <td><input type="number" min="0" step="1" placeholder="prix" id="price-${k}" data-price="${esc(n)}" value="${p || ''}" aria-label="Prix de la rune ${esc(n)}"></td>
+      <td class="num">${p ? kamas(buy * p) : '–'}</td></tr>`;
+  }).join('') : '<tr><td colspan="5" class="empty">Rien à acheter : toutes les lignes sont au max.</td></tr>';
+  $('shopTotals').innerHTML = total ? `<span>Budget estimé : <b>${kamas(total)}</b></span>` : '';
+}
+function renderLib(){
+  $('libSelect').innerHTML = `<option value="">Mes objets (${library.length})</option>` + library.map((o,i) => `<option value="${i}">${esc(o.name || 'Sans nom')}</option>`).join('');
 }
 function renderWeights(){
   $('weightsBody').innerHTML = STATS.map(s => `<tr><td>${esc(s.name)}</td><td class="num">${fmt(s.w)}</td><td>${s.runes.map(r=>`${esc(r.n)} +${r.v} → <span class="num">${fmt(r.v*s.w)}</span>`).join(' · ')}</td></tr>`).join('');
 }
-function renderAll(){ const b = renderHead(); renderTable(b); renderHist(); save(); }
+function renderAll(){ const b = renderHead(); renderTable(b); renderHist(); renderShop(); renderLib(); save(); }
 
 function apply(i, oc){
   const l = state.lines[i]; if (!l) return;
@@ -386,10 +456,44 @@ function apply(i, oc){
   if (oc !== 'ec') l.cur += r.v;
   const delta = oc === 'sc' ? 0 : lost - (oc === 'ec' ? 0 : W);
   state.puits = Math.max(0, r2(state.puits + delta));
+  const before = JSON.parse(snapshot).puits;
   l.rune = null; pending = {}; state.sample = false;
-  state.hist.push({ rune:`${r.n} (+${r.v} ${s.name})`, oc, puits:state.puits, lossTxt:lossTxt.join(', '), snapshot });
+  state.hist.push({ rune:`${r.n} (+${r.v} ${s.name})`, oc, puits:state.puits, lossTxt:lossTxt.join(', '), snapshot, cost: prices[r.n] || 0 });
+  explain(oc, r, s, W, lost, lossTxt, before);
   renderAll();
 }
+
+function explain(oc, r, s, W, lost, lossTxt, before){
+  const P = state.puits, gain = `+${r.v} ${s.name}`, pertes = lossTxt.join(', ');
+  let t;
+  if (oc === 'sc') t = `<b style="color:var(--ok)">Succès critique</b> : ${esc(gain)} et rien de perdu. Le puits ne bouge pas (${fmt(P)}). C'est le meilleur résultat possible.`;
+  else if (oc === 'sn') {
+    t = `<b style="color:var(--warn)">Succès neutre</b> : ${esc(gain)} (la rune pèse ${fmt(W)}). `;
+    if (!lost) t += before >= W ? `Tu n'as rien perdu : ton puits a payé les ${fmt(W)} de poids. Il passe de ${fmt(before)} à ${fmt(P)}.` : `Tu n'as noté aucune perte. Si le jeu a affiché « -reliquat », c'est le puits qui a payé. Sinon, vérifie tes lignes.`;
+    else if (lost > W) t += `Tu as perdu ${esc(pertes)}, soit ${fmt(lost)} de poids. C'est plus que la rune : les ${fmt(lost - W)} en trop vont dans le puits (${fmt(before)} → ${fmt(P)}).`;
+    else if (lost < W) t += `Tu as perdu ${esc(pertes)}, soit ${fmt(lost)} de poids. Le reste (${fmt(W - lost)}) est pris dans le puits s'il y en a (${fmt(before)} → ${fmt(P)}).`;
+    else t += `Tu as perdu ${esc(pertes)}, exactement le poids de la rune. Le puits ne bouge pas.`;
+  } else {
+    t = `<b style="color:var(--bad)">Échec critique</b> : la rune n'est pas passée. `;
+    t += lost ? `Tu as perdu ${esc(pertes)} (${fmt(lost)} de poids). Ce poids part dans le puits (${fmt(before)} → ${fmt(P)}) : il servira à sécuriser les prochaines runes.`
+              : `Tu n'as noté aucune perte. En général un EC fait baisser des lignes : vérifie ton objet en jeu et corrige les valeurs.`;
+  }
+  $('explainText').innerHTML = t; $('explain').hidden = false;
+}
+$('btnExplainClose').onclick = () => { $('explain').hidden = true; };
+$('shopBody').addEventListener('change', e => {
+  const n = e.target.dataset.price; if (!n) return;
+  const v = Math.max(0, +e.target.value || 0); if (v) prices[n] = v; else delete prices[n];
+  savePrices(); renderShop(); renderHist();
+});
+$('btnSaveItem').onclick = () => {
+  const copy = JSON.parse(JSON.stringify(state)); copy.name = copy.name || 'Objet sans nom';
+  const i = library.findIndex(o => o.name === copy.name);
+  if (i >= 0) library[i] = copy; else library.push(copy);
+  saveLib(); renderLib(); $('libSelect').value = String(i >= 0 ? i : library.length - 1);
+};
+$('libSelect').onchange = e => { const o = library[+e.target.value]; if (e.target.value === '' || !o) return; state = JSON.parse(JSON.stringify(o)); pending = {}; $('explain').hidden = true; renderAll(); $('libSelect').value = e.target.value; };
+$('btnDelItem').onclick = () => { const v = $('libSelect').value; if (v === '') return; library.splice(+v, 1); saveLib(); renderLib(); };
 
 const body = $('itemBody');
 body.addEventListener('change', e => {
@@ -409,11 +513,11 @@ body.addEventListener('click', e => {
 $('btnAdd').onclick = () => { const id = $('addStat').value; if (!id) return; state.lines.push({id, cur:0, max:0}); state.sample = false; renderAll(); };
 $('itemName').oninput = e => { state.name = e.target.value; save(); };
 $('puitsInput').onchange = e => { state.puits = Math.max(0, +e.target.value || 0); renderAll(); };
-$('btnSample').onclick = () => { state = fresh(); pending = {}; renderAll(); };
+$('btnSample').onclick = () => { state = fresh(); pending = {}; $('explain').hidden = true; renderAll(); };
 $('btnClear').onclick = () => { state = { name:'', img:'', meta:'', skipped:'', lines:[], puits:0, hist:[], sample:false }; pending = {}; renderAll(); };
 $('btnUndo').onclick = () => {
   const e = state.hist.pop(); if (!e) return;
-  const s = JSON.parse(e.snapshot); state.lines = s.lines; state.puits = s.puits; pending = {}; renderAll();
+  const s = JSON.parse(e.snapshot); state.lines = s.lines; state.puits = s.puits; pending = {}; $('explain').hidden = true; renderAll();
 };
 
 // ---- Recherche d'objets (API publique DofusDude) ----
