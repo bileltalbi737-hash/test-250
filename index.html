@@ -1,0 +1,450 @@
+<meta charset="utf-8">
+<title>Atelier Forgemagie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#EDF0F3; --surface:#FFFFFF; --surface-2:#F5F7F9; --line:#D6DCE3;
+  --ink:#18212B; --muted:#5B6776; --accent:#2B6A89; --accent-ink:#FFFFFF;
+  --gold:#A87814; --gold-soft:#F6EBD2;
+  --ok:#2F7D4F; --ok-soft:#DFF1E6; --warn:#A5610E; --warn-soft:#FBEBD5; --bad:#B23A3A; --bad-soft:#F8E0E0;
+  --display:"Cinzel",Georgia,serif; --body:"Source Sans 3",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11161C; --surface:#19212A; --surface-2:#1F2833; --line:#2E3A47;
+    --ink:#E3E9EF; --muted:#9AA7B5; --accent:#6DB0D0; --accent-ink:#0E1A22;
+    --gold:#E2B24C; --gold-soft:#3A2F17;
+    --ok:#6CC592; --ok-soft:#1C3325; --warn:#E6A457; --warn-soft:#3A2A15; --bad:#EE8181; --bad-soft:#3C1E1E;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11161C; --surface:#19212A; --surface-2:#1F2833; --line:#2E3A47;
+  --ink:#E3E9EF; --muted:#9AA7B5; --accent:#6DB0D0; --accent-ink:#0E1A22;
+  --gold:#E2B24C; --gold-soft:#3A2F17;
+  --ok:#6CC592; --ok-soft:#1C3325; --warn:#E6A457; --warn-soft:#3A2A15; --bad:#EE8181; --bad-soft:#3C1E1E;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:24px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:20px}
+header h1{font-family:var(--display);font-size:clamp(26px,4vw,36px);margin:0;letter-spacing:.02em;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);max-width:68ch}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.col{display:grid;gap:20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.panel h2{font-family:var(--display);font-size:17px;margin:0 0 4px;letter-spacing:.03em}
+.panel .sub{margin:0 0 14px;color:var(--muted);font-size:13.5px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:6px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+input[type=number],input[type=text],select{font:inherit;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:5px 8px;min-width:0}
+input[type=number]{width:74px;font-family:var(--mono);font-size:13.5px}
+select{max-width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);padding:6px 12px}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.ghost{background:transparent}
+button.x{padding:2px 8px;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.bar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;min-width:60px}
+.bar>span{display:block;height:100%;background:var(--accent)}
+.bar>span.over{background:var(--gold)}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.gold{background:var(--gold-soft);color:var(--gold)}
+.chip.mute{background:var(--surface-2);color:var(--muted)}
+.puits{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;align-items:center}
+.puits .big{font-family:var(--mono);font-size:40px;line-height:1;color:var(--gold)}
+.puits label{font-size:13px;color:var(--muted)}
+.field{display:grid;gap:4px}
+.field>span{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.outcomes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.outcomes label{border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;display:grid;gap:2px;background:var(--surface-2)}
+.outcomes label:has(input:checked){border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.outcomes input{position:absolute;opacity:0;pointer-events:none}
+.outcomes b{font-size:14px}
+.outcomes small{color:var(--muted);font-size:12px;line-height:1.3}
+@media (max-width:520px){.outcomes{grid-template-columns:minmax(0,1fr)}}
+.losses{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.losses label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;background:var(--surface-2);border-radius:6px;padding:4px 4px 4px 10px}
+.losses input{width:64px}
+.preview{background:var(--gold-soft);border-radius:8px;padding:10px 12px;font-size:14px}
+.pick{border:1px solid var(--accent);border-radius:8px;padding:12px 14px;display:grid;gap:4px}
+.pick .t{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);font-weight:700}
+.pick .r{font-size:18px;font-weight:700}
+.advice{display:grid;gap:8px;margin-top:12px}
+.adv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.adv:last-child{border-bottom:0}
+.adv .n{font-weight:600}
+.adv .d{grid-column:1/-1;color:var(--muted);font-size:13px}
+.hist{display:grid;gap:6px;max-height:320px;overflow:auto;font-size:13.5px}
+.hist div{display:flex;gap:8px;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:6px}
+.empty{color:var(--muted);font-size:13.5px;margin:0}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+details summary{font-family:var(--display);font-size:16px;cursor:pointer;letter-spacing:.03em}
+details .content{margin-top:10px;max-width:75ch}
+details .content p,details .content li{color:var(--ink)}
+details dt{font-weight:700;margin-top:10px}
+details dd{margin:2px 0 0}
+.muted{color:var(--muted)}
+.total{margin-top:10px;font-size:13.5px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Atelier Forgemagie</h1>
+    <p>Saisis ton objet, puis enregistre chaque rune que tu passes. L'outil calcule ton puits, te dit quelle rune passer ensuite et si un exo PA, PM ou PO est jouable.</p>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <section class="panel" aria-labelledby="h-item">
+        <h2 id="h-item">1. Ton objet</h2>
+        <p class="sub">Pour chaque ligne : la valeur actuelle et le jet maximum affiché sur l'objet (dans l'encyclopédie). <span id="sampleNote"></span></p>
+        <div class="row" style="margin-bottom:10px">
+          <input type="text" id="itemName" placeholder="Nom de l'objet" aria-label="Nom de l'objet" style="flex:1 1 200px">
+          <button class="ghost" id="btnSample" type="button">Charger l'exemple</button>
+          <button class="ghost" id="btnClear" type="button">Vider</button>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Caractéristique</th><th>Actuel</th><th>Max</th><th>Progression</th><th>Poids</th><th></th></tr></thead>
+            <tbody id="itemBody"></tbody>
+          </table>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <select id="addStat" aria-label="Caractéristique à ajouter"></select>
+          <button type="button" id="btnAdd">Ajouter la ligne</button>
+        </div>
+        <p class="total" id="itemTotal"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="h-rune">
+        <h2 id="h-rune">2. Passer une rune</h2>
+        <p class="sub">Fais le passage en jeu, puis recopie ici ce qui s'est passé.</p>
+        <div class="row" style="align-items:end">
+          <label class="field"><span>Caractéristique</span><select id="runeStat"></select></label>
+          <label class="field"><span>Rune</span><select id="runeType"></select></label>
+        </div>
+        <div class="field" style="margin-top:14px"><span>Résultat en jeu</span>
+          <div class="outcomes" role="radiogroup">
+            <label><input type="radio" name="outcome" id="oc-sc" value="sc" checked><b style="color:var(--ok)">Succès critique</b><small>La stat monte, rien ne baisse.</small></label>
+            <label><input type="radio" name="outcome" id="oc-sn" value="sn"><b style="color:var(--warn)">Succès neutre</b><small>La stat monte, d'autres baissent ou le puits paie.</small></label>
+            <label><input type="radio" name="outcome" id="oc-ec" value="ec"><b style="color:var(--bad)">Échec critique</b><small>La stat ne monte pas, d'autres baissent.</small></label>
+          </div>
+        </div>
+        <div class="field" id="lossBox" style="margin-top:14px" hidden><span>Stats perdues (combien de points ?)</span>
+          <div class="losses" id="losses"></div>
+        </div>
+        <div class="preview" id="runePreview" style="margin-top:14px"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="primary" type="button" id="btnApply">Enregistrer le passage</button>
+          <button type="button" id="btnUndo">Annuler le dernier</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="panel" aria-labelledby="h-puits">
+        <h2 id="h-puits">Ton puits</h2>
+        <p class="sub">Le poids gardé en réserve par l'objet. Il sert à passer des runes sans rien perdre.</p>
+        <div class="puits">
+          <div class="big" id="puitsBig">0</div>
+          <div>
+            <label for="puitsInput">Corriger à la main si le jeu indique autre chose</label>
+            <div class="row"><input type="number" id="puitsInput" step="0.01" min="0"> <span class="muted" style="font-size:13px">points de poids</span></div>
+          </div>
+        </div>
+        <div id="exo" style="margin-top:14px;display:grid;gap:6px"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-adv">
+        <h2 id="h-adv">3. Quelle rune passer ?</h2>
+        <p class="sub">Calculé à partir de ce qu'il te manque sur chaque ligne et de ton puits actuel.</p>
+        <div id="pick"></div>
+        <div class="advice" id="advice"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-hist">
+        <h2 id="h-hist">Historique</h2>
+        <p class="sub" id="histStats"></p>
+        <div class="hist" id="hist"></div>
+      </section>
+    </div>
+  </div>
+
+  <details open>
+    <summary>Comprendre la forgemagie en 2 minutes</summary>
+    <div class="content">
+      <dl>
+        <dt>Le poids</dt>
+        <dd>Chaque point de caractéristique « pèse » un certain poids. 1 Force pèse 1, 1 Vitalité pèse 0,2, 1 PA pèse 100. Une rune ajoute donc du poids à l'objet : une rune Pa Fo (+3 Force) pèse 3, une rune PA pèse 100.</dd>
+        <dt>Les trois résultats</dt>
+        <dd><b>Succès critique</b> : la rune passe sans rien casser. <b>Succès neutre</b> : la rune passe, mais l'objet perd l'équivalent en poids ailleurs (ou le puits paie). <b>Échec critique</b> : la rune ne passe pas et l'objet perd du poids quand même.</dd>
+        <dt>Le puits (ou reliquat)</dt>
+        <dd>Quand l'objet perd plus de poids que la rune n'en apporte, la différence est mise de côté : c'est le puits. Le jeu affiche « +reliquat » quand il se remplit et « -reliquat » quand il est utilisé. Tant que le puits couvre le poids d'une rune, un succès neutre ne te fait rien perdre.</dd>
+        <dt>Overmax et exo</dt>
+        <dd><b>Overmax</b> : dépasser le jet max d'une ligne existante (plus c'est haut, plus c'est dur). <b>Exo</b> : ajouter une ligne qui n'existe pas sur l'objet, souvent PA, PM ou PO. Il faut en pratique un puits au moins égal au poids de la rune (100 pour PA, 90 pour PM, 51 pour PO).</dd>
+      </dl>
+      <p><b>Conseils de débutant</b></p>
+      <ul>
+        <li>Entraîne-toi sur des objets pas chers avant de toucher à un objet de valeur.</li>
+        <li>Monte d'abord avec les petites runes (Fo, Pa Fo). Les Ra font de gros sauts, mais elles pèsent lourd et cassent plus de choses.</li>
+        <li>Garde les runes chères (PA, PM, Ra) pour les moments où ton puits est plein.</li>
+        <li>Ne vise pas l'overmax tout de suite. Un objet au jet parfait se vend déjà bien.</li>
+        <li>Note chaque passage ici : sans ça, on perd vite le compte du puits.</li>
+      </ul>
+      <p class="muted">Les poids utilisés sont ceux couramment admis par la communauté. Ils peuvent changer avec les mises à jour du jeu : fie-toi aux messages « reliquat » en jeu et corrige le puits à la main si besoin.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Table des poids et des runes</summary>
+    <div class="content tablewrap" style="max-width:none">
+      <table>
+        <thead><tr><th>Caractéristique</th><th>Poids par point</th><th>Runes (bonus → poids)</th></tr></thead>
+        <tbody id="weightsBody"></tbody>
+      </table>
+    </div>
+  </details>
+</div>
+
+<script>
+const R = (pre, vals) => vals.map((v, i) => ({ n: (['', 'Pa ', 'Ra '][i]) + pre, v }));
+const EL = { terre:'Terre', feu:'Feu', eau:'Eau', air:'Air', neutre:'Neutre' };
+const STATS = [
+  { id:'vi',   name:'Vitalité',        w:0.2,  runes:R('Vi',[5,15,50]) },
+  { id:'fo',   name:'Force',           w:1,    runes:R('Fo',[1,3,10]) },
+  { id:'ine',  name:'Intelligence',    w:1,    runes:R('Ine',[1,3,10]) },
+  { id:'cha',  name:'Chance',          w:1,    runes:R('Cha',[1,3,10]) },
+  { id:'age',  name:'Agilité',         w:1,    runes:R('Age',[1,3,10]) },
+  { id:'sa',   name:'Sagesse',         w:3,    runes:R('Sa',[1,3,10]) },
+  { id:'pui',  name:'Puissance',       w:2,    runes:R('Pui',[1,3,10]) },
+  { id:'ini',  name:'Initiative',      w:0.1,  runes:R('Ini',[10,30,100]) },
+  { id:'pp',   name:'Prospection',     w:3,    runes:R('Prospe',[1,3]) },
+  { id:'pod',  name:'Pods',            w:0.25, runes:R('Pod',[10,30,100]) },
+  { id:'pa',   name:'PA',              w:100,  runes:[{n:'Ga PA',v:1}] },
+  { id:'pm',   name:'PM',              w:90,   runes:[{n:'Ga PM',v:1}] },
+  { id:'po',   name:'Portée',          w:51,   runes:[{n:'Po',v:1}] },
+  { id:'invo', name:'Invocations',     w:30,   runes:[{n:'Invo',v:1}] },
+  { id:'cri',  name:'Critique',        w:10,   runes:[{n:'Cri',v:1}] },
+  { id:'so',   name:'Soins',           w:10,   runes:[{n:'So',v:1}] },
+  { id:'do',   name:'Dommages',        w:20,   runes:[{n:'Do',v:1}] },
+  ...Object.entries(EL).map(([k,l]) => ({ id:'do'+k, name:'Dommages '+l, w:5, runes:R('Do '+l,[1,3]) })),
+  { id:'docri',name:'Dommages critiques', w:5, runes:R('Do Cri',[1,3]) },
+  { id:'recri',name:'Rés. critiques',  w:2,    runes:R('Ré Cri',[1,3]) },
+  { id:'dopou',name:'Dommages poussée',w:5,    runes:R('Do Pou',[1,3]) },
+  { id:'repou',name:'Rés. poussée',    w:2,    runes:R('Ré Pou',[1,3]) },
+  ...Object.entries(EL).map(([k,l]) => ({ id:'rp'+k, name:'Rés. '+l+' %', w:6, runes:[{n:'Ré Per '+l,v:1}] })),
+  ...Object.entries(EL).map(([k,l]) => ({ id:'rf'+k, name:'Rés. '+l+' fixe', w:2, runes:R('Ré '+l,[1,3]) })),
+  { id:'retpa',name:'Retrait PA',      w:7,    runes:R('Ret PA',[1,3]) },
+  { id:'espa', name:'Esquive PA',      w:7,    runes:R('Ré PA',[1,3]) },
+  { id:'retpm',name:'Retrait PM',      w:7,    runes:R('Ret PM',[1,3]) },
+  { id:'espm', name:'Esquive PM',      w:7,    runes:R('Ré PM',[1,3]) },
+  { id:'tac',  name:'Tacle',           w:4,    runes:R('Tac',[1,3]) },
+  { id:'fui',  name:'Fuite',           w:4,    runes:R('Fui',[1,3]) },
+  { id:'ren',  name:'Renvoi dommages', w:10,   runes:[{n:'Ren',v:1}] },
+  { id:'pdsort',name:'% Dommages sorts', w:15, runes:[{n:'Do Per So',v:1}] },
+  { id:'pdarme',name:'% Dommages armes', w:15, runes:[{n:'Do Per Ar',v:1}] },
+  { id:'pdmel', name:'% Dommages mêlée', w:15, runes:[{n:'Do Per Mé',v:1}] },
+  { id:'pddis', name:'% Dommages distance', w:15, runes:[{n:'Do Per Di',v:1}] },
+  { id:'prmel', name:'% Rés. mêlée',  w:15,   runes:[{n:'Ré Per Mé',v:1}] },
+  { id:'prdis', name:'% Rés. distance', w:15, runes:[{n:'Ré Per Di',v:1}] },
+];
+const S = Object.fromEntries(STATS.map(s => [s.id, s]));
+const EXO = ['pa','pm','po'];
+
+const SAMPLE = {
+  name:'Exemple : coiffe niveau 200 (fictive)',
+  lines:[
+    {id:'vi',cur:278,max:300},{id:'fo',cur:34,max:40},{id:'sa',cur:17,max:20},
+    {id:'cri',cur:3,max:4},{id:'dofeu',cur:5,max:7},{id:'pp',cur:12,max:15},{id:'rpterre',cur:6,max:7},
+  ],
+};
+
+let state = { name:SAMPLE.name, lines:SAMPLE.lines.map(l=>({...l})), puits:0, hist:[], sample:true };
+try { const s = JSON.parse(localStorage.getItem('forgemagie-v1')); if (s && Array.isArray(s.lines)) state = s; } catch(e) {}
+const save = () => { try { localStorage.setItem('forgemagie-v1', JSON.stringify(state)); } catch(e) {} };
+
+const $ = id => document.getElementById(id);
+const fmt = n => (Math.round(n*100)/100).toLocaleString('fr-FR');
+const lineW = l => l.cur * S[l.id].w;
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function renderItem(){
+  $('itemName').value = state.name || '';
+  $('sampleNote').textContent = state.sample ? "Les valeurs affichées sont un exemple : remplace-les par ton objet." : '';
+  const body = $('itemBody');
+  if (!state.lines.length) { body.innerHTML = '<tr><td colspan="6" class="empty">Aucune ligne. Ajoute les caractéristiques de ton objet ci-dessous.</td></tr>'; }
+  else body.innerHTML = state.lines.map((l,i) => {
+    const s = S[l.id];
+    const pct = l.max > 0 ? Math.min(100, l.cur / l.max * 100) : 100;
+    const over = l.max > 0 && l.cur > l.max;
+    let chip = '';
+    if (l.max <= 0) chip = '<span class="chip gold">exo</span>';
+    else if (over) chip = '<span class="chip gold">overmax +'+fmt(l.cur-l.max)+'</span>';
+    else if (l.cur >= l.max) chip = '<span class="chip ok">parfait</span>';
+    return `<tr>
+      <td>${esc(s.name)} ${chip}</td>
+      <td><input type="number" id="cur-${i}" data-i="${i}" data-k="cur" value="${l.cur}" aria-label="${esc(s.name)} actuel"></td>
+      <td><input type="number" id="max-${i}" data-i="${i}" data-k="max" value="${l.max}" aria-label="${esc(s.name)} max"></td>
+      <td><div class="bar"><span class="${over?'over':''}" style="width:${pct}%"></span></div></td>
+      <td class="num">${fmt(lineW(l))}</td>
+      <td><button class="x" type="button" data-del="${i}" aria-label="Retirer ${esc(s.name)}">✕</button></td>
+    </tr>`;
+  }).join('');
+  const total = state.lines.reduce((a,l)=>a+lineW(l),0);
+  const totalMax = state.lines.reduce((a,l)=>a+Math.max(0,l.max)*S[l.id].w,0);
+  $('itemTotal').innerHTML = `Poids total de l'objet : <span class="num">${fmt(total)}</span> sur <span class="num">${fmt(totalMax)}</span> au jet parfait.`;
+  const used = new Set(state.lines.map(l=>l.id));
+  $('addStat').innerHTML = STATS.filter(s=>!used.has(s.id)).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+
+function renderRuneForm(keep){
+  const sel = $('runeStat'), prev = keep ? sel.value : null;
+  const onItem = state.lines.map(l=>l.id);
+  const others = STATS.filter(s=>!onItem.includes(s.id));
+  sel.innerHTML = `<optgroup label="Sur l'objet">${onItem.map(id=>`<option value="${id}">${esc(S[id].name)}</option>`).join('')}</optgroup>`
+    + `<optgroup label="Exo (nouvelle ligne)">${others.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</optgroup>`;
+  if (prev && S[prev]) sel.value = prev;
+  renderRuneTypes();
+}
+function renderRuneTypes(){
+  const s = S[$('runeStat').value]; if (!s) return;
+  const prev = $('runeType').value;
+  $('runeType').innerHTML = s.runes.map((r,i)=>`<option value="${i}">${esc(r.n)} (+${r.v}, poids ${fmt(r.v*s.w)})</option>`).join('');
+  if (prev && s.runes[prev]) $('runeType').value = prev;
+  renderLosses();
+}
+function outcome(){ return document.querySelector('input[name=outcome]:checked').value; }
+function renderLosses(){
+  const oc = outcome(), statId = $('runeStat').value;
+  $('lossBox').hidden = oc === 'sc';
+  $('losses').innerHTML = state.lines.map((l,i)=>({l,i})).filter(o => oc === 'ec' || o.l.id !== statId).map(({l,i}) =>
+    `<label for="loss-${i}"><span>${esc(S[l.id].name)}</span><input type="number" min="0" value="0" id="loss-${i}" data-loss="${i}"></label>`).join('')
+    || '<p class="empty">Aucune autre ligne sur l\'objet.</p>';
+  renderPreview();
+}
+function readRune(){
+  const s = S[$('runeStat').value], r = s.runes[+$('runeType').value || 0];
+  const oc = outcome();
+  let lost = 0; const losses = [];
+  if (oc !== 'sc') document.querySelectorAll('[data-loss]').forEach(inp => {
+    const v = Math.max(0, +inp.value || 0); if (!v) return;
+    const l = state.lines[+inp.dataset.loss]; lost += v * S[l.id].w; losses.push({i:+inp.dataset.loss, v});
+  });
+  const W = r.v * s.w, gained = oc === 'ec' ? 0 : W;
+  const delta = oc === 'sc' ? 0 : lost - gained;
+  return { s, r, oc, W, lost, losses, delta, after: Math.max(0, state.puits + delta) };
+}
+function renderPreview(){
+  const x = readRune();
+  let txt = `Rune <b>${esc(x.r.n)}</b> : poids <span class="num">${fmt(x.W)}</span>. `;
+  if (x.oc === 'sc') txt += `Succès critique : le puits ne bouge pas (<span class="num">${fmt(state.puits)}</span>).`;
+  else txt += `Poids perdu : <span class="num">${fmt(x.lost)}</span>. Puits après : <b class="num">${fmt(x.after)}</b> (${x.delta>=0?'+':''}${fmt(x.delta)}).`;
+  $('runePreview').innerHTML = txt;
+}
+
+function pickRune(s, missing){
+  const fits = s.runes.filter(r => r.v <= missing);
+  const r = fits.length ? fits[fits.length-1] : s.runes[0];
+  return { r, W: r.v * s.w, over: r.v - missing };
+}
+function renderAdvice(){
+  const P = state.puits;
+  const todo = state.lines.filter(l => l.max > 0 && l.cur < l.max).map(l => {
+    const s = S[l.id], m = l.max - l.cur, p = pickRune(s, m);
+    return { l, s, m, ...p, covered: P >= p.W };
+  });
+  const box = $('advice');
+  if (!todo.length) {
+    $('pick').innerHTML = state.lines.length ? '<div class="pick"><span class="t">Objet au jet parfait</span><span class="r">Toutes les lignes sont au max</span><span class="muted">Tu peux t\'arrêter là, ou tenter un overmax ou un exo si ton puits le permet.</span></div>' : '';
+    box.innerHTML = ''; return;
+  }
+  const covered = todo.filter(t=>t.covered).sort((a,b)=>b.W-a.W);
+  const best = covered[0] || [...todo].sort((a,b)=>a.W-b.W)[0];
+  const why = best.covered
+    ? `Ton puits (${fmt(P)}) couvre son poids (${fmt(best.W)}) : même en succès neutre, tu ne devrais rien perdre. On profite du puits pour la ligne la plus lourde.`
+    : `Aucune rune n'est couverte par ton puits. On commence par la plus légère (poids ${fmt(best.W)}) pour limiter les pertes. Les échecs rempliront le puits.`;
+  $('pick').innerHTML = `<div class="pick"><span class="t">À passer maintenant</span><span class="r">${esc(best.r.n)} sur ${esc(best.s.name)}</span><span class="muted">${why}</span></div>`;
+  box.innerHTML = todo.map(t => {
+    const chip = t.covered ? '<span class="chip ok">couvert par le puits</span>' : '<span class="chip warn">risque de perte</span>';
+    const count = Math.ceil(t.m / t.r.v);
+    let d = `Il manque ${fmt(t.m)}. Rune conseillée : ${esc(t.r.n)} (+${t.r.v}, poids ${fmt(t.W)})`;
+    d += t.over > 0 ? `, qui dépasse de ${fmt(t.over)} (petit overmax).` : `, environ ${count} passage${count>1?'s':''} réussi${count>1?'s':''}.`;
+    return `<div class="adv"><span class="n">${esc(t.s.name)}</span>${chip}<span class="d">${d}</span></div>`;
+  }).join('');
+}
+function renderPuits(){
+  $('puitsBig').textContent = fmt(state.puits);
+  if (document.activeElement !== $('puitsInput')) $('puitsInput').value = Math.round(state.puits*100)/100;
+  const onItem = new Set(state.lines.map(l=>l.id));
+  $('exo').innerHTML = EXO.map(id => {
+    const s = S[id], W = s.runes[0].v * s.w;
+    if (onItem.has(id)) return `<div class="row"><span class="chip mute">${s.name}</span><span class="muted" style="font-size:13.5px">déjà sur l'objet, pas d'exo possible</span></div>`;
+    const ok = state.puits >= W;
+    return `<div class="row"><span class="chip ${ok?'ok':'mute'}">Exo ${s.name}</span><span style="font-size:13.5px">${ok ? `Jouable : ton puits couvre les ${W} de poids.` : `Il manque <span class="num">${fmt(W - state.puits)}</span> de puits (besoin de ${W}).`}</span></div>`;
+  }).join('');
+}
+function renderHist(){
+  const h = state.hist;
+  const n = {sc:0,sn:0,ec:0}; h.forEach(e=>n[e.oc]++);
+  $('histStats').textContent = h.length ? `${h.length} rune${h.length>1?'s':''} passée${h.length>1?'s':''} : ${n.sc} succès critique${n.sc>1?'s':''}, ${n.sn} neutre${n.sn>1?'s':''}, ${n.ec} échec${n.ec>1?'s':''}.` : 'Les passages que tu enregistres apparaîtront ici.';
+  const lbl = {sc:['ok','SC'],sn:['warn','SN'],ec:['bad','EC']};
+  $('hist').innerHTML = h.slice().reverse().map(e => `<div><span><span class="chip ${lbl[e.oc][0]}">${lbl[e.oc][1]}</span> ${esc(e.rune)} ${e.lossTxt?'<span class="muted">· '+esc(e.lossTxt)+'</span>':''}</span><span class="num muted">puits ${fmt(e.puits)}</span></div>`).join('');
+}
+function renderWeights(){
+  $('weightsBody').innerHTML = STATS.map(s => `<tr><td>${esc(s.name)}</td><td class="num">${fmt(s.w)}</td><td>${s.runes.map(r=>`${esc(r.n)} +${r.v} → <span class="num">${fmt(r.v*s.w)}</span>`).join(' · ')}</td></tr>`).join('');
+}
+function renderAll(keep){ renderItem(); renderRuneForm(keep); renderAdvice(); renderPuits(); renderHist(); save(); }
+
+$('itemBody').addEventListener('change', e => {
+  const t = e.target; if (!t.dataset.k) return;
+  state.lines[+t.dataset.i][t.dataset.k] = Math.max(0, +t.value || 0);
+  renderItem(); renderAdvice(); renderPuits(); renderLosses(); save();
+});
+$('itemBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-del]'); if (!b) return;
+  state.lines.splice(+b.dataset.del, 1); renderAll(true);
+});
+$('btnAdd').onclick = () => { const id = $('addStat').value; if (!id) return; state.lines.push({id, cur:0, max:0}); state.sample = false; renderAll(true); };
+$('itemName').oninput = e => { state.name = e.target.value; save(); };
+$('btnSample').onclick = () => { state = { name:SAMPLE.name, lines:SAMPLE.lines.map(l=>({...l})), puits:0, hist:[], sample:true }; renderAll(); };
+$('btnClear').onclick = () => { state = { name:'', lines:[], puits:0, hist:[], sample:false }; renderAll(); };
+$('runeStat').onchange = renderRuneTypes;
+$('runeType').onchange = renderPreview;
+document.querySelectorAll('input[name=outcome]').forEach(r => r.onchange = renderLosses);
+$('losses').addEventListener('input', renderPreview);
+$('puitsInput').onchange = e => { state.puits = Math.max(0, +e.target.value || 0); renderAdvice(); renderPuits(); renderPreview(); save(); };
+
+$('btnApply').onclick = () => {
+  const x = readRune();
+  const snapshot = JSON.stringify({lines:state.lines, puits:state.puits});
+  let line = state.lines.find(l => l.id === x.s.id);
+  if (x.oc !== 'ec') { if (!line) { line = {id:x.s.id, cur:0, max:0}; state.lines.push(line); } line.cur += x.r.v; }
+  const lossTxt = x.losses.map(o => { const l = state.lines[o.i]; l.cur = Math.max(0, l.cur - o.v); return `-${o.v} ${S[l.id].name}`; }).join(', ');
+  state.puits = x.after; state.sample = false;
+  state.hist.push({ rune:`${x.r.n} (+${x.r.v} ${x.s.name})`, oc:x.oc, puits:state.puits, lossTxt, snapshot });
+  document.querySelectorAll('[data-loss]').forEach(i => i.value = 0);
+  renderAll(true);
+};
+$('btnUndo').onclick = () => {
+  const e = state.hist.pop(); if (!e) return;
+  const s = JSON.parse(e.snapshot); state.lines = s.lines; state.puits = s.puits; renderAll(true);
+};
+
+renderWeights();
+renderAll();
+</script>
