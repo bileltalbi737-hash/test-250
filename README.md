@@ -59,7 +59,8 @@ Double-cliquez sur `build_exe.bat` : il installe PyInstaller et produit
 
 1. Lancez vos clients Dofus et connectez vos personnages.
 2. Ouvrez Dofus MultiSwitch : les fenêtres sont détectées automatiquement.
-3. Cliquez sur **« Auto-assigner F1-F8 »** : la 1ʳᵉ fenêtre reçoit F1, la 2ᵉ F2, etc.
+3. Cliquez sur **« Auto-assigner F1, F2… »** : la 1ʳᵉ fenêtre reçoit F1, la 2ᵉ F2, etc.
+   (les touches réservées à la navigation, F9/F10 par défaut, sont sautées)
    (ou sélectionnez une ligne et choisissez la touche à la main, avec Ctrl/Alt/Maj si besoin).
 4. Ordonnez la liste avec **▲ Monter / ▼ Descendre** pour refléter votre
    **ordre d'initiative** en combat.

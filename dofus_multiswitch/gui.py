@@ -22,7 +22,7 @@ ABOUT_TEXT = (
     "Gestionnaire de fenêtres multi-compte pour Dofus.\n\n"
     "Conformité CGU Ankama :\n"
     "• 1 appui de touche = 1 action = 1 fenêtre (changement de focus uniquement)\n"
-    "• aucune touche ni clic n'est envoyé au jeu\n"
+    "• aucune touche ni aucun clic n'est envoyé au jeu\n"
     "• aucune duplication d'entrées vers plusieurs clients\n"
     "• aucune automatisation d'action de jeu\n\n"
     "Rappel : le multi-compte est interdit sur les serveurs mono-compte."
@@ -75,7 +75,7 @@ class App:
         toolbar.pack(fill="x", **pad)
         ttk.Button(toolbar, text="Actualiser", command=self.refresh).pack(side="left")
         ttk.Button(
-            toolbar, text="Auto-assigner F1-F8", command=self.auto_assign
+            toolbar, text="Auto-assigner F1, F2…", command=self.auto_assign
         ).pack(side="left", padx=(6, 0))
         ttk.Button(toolbar, text="▲ Monter", command=lambda: self.move_selected(-1)).pack(
             side="left", padx=(18, 0)
@@ -316,18 +316,36 @@ class App:
         self.refresh()
 
     def auto_assign(self):
-        """Assigne F1, F2, F3… aux fenêtres dans l'ordre de la liste."""
+        """Assigne F1, F2, F3… aux fenêtres dans l'ordre de la liste.
+
+        Les touches réservées à la navigation sont retirées de la réserve
+        AVANT l'appariement : chaque fenêtre reçoit la prochaine touche F
+        réellement libre.
+        """
         if not self.windows:
             self._set_status("Aucune fenêtre à assigner.")
             return
-        function_keys = ["F%d" % i for i in range(1, 13)]
-        nav_used = {v for v in self.cfg["nav"].values() if v}
+        nav_used = {
+            keys.normalize_hotkey(v)
+            for v in self.cfg["nav"].values()
+            if v and keys.is_valid_hotkey(v)
+        }
+        free_keys = [k for k in ("F%d" % i for i in range(1, 13)) if k not in nav_used]
         assigned = 0
-        for window, key in zip(self.windows, function_keys):
-            if key in nav_used:
-                continue  # ne pas écraser une touche de navigation
+        assigned_chars = set()
+        used_keys = set()
+        for window, key in zip(self.windows, free_keys):
             self.cfg["bindings"][window.character] = key
+            assigned_chars.add(window.character)
+            used_keys.add(key)
             assigned += 1
+        # Retirer les anciens raccourcis d'autres personnages qui entreraient
+        # en collision avec une touche fraîchement assignée.
+        for character, hotkey in list(self.cfg["bindings"].items()):
+            if character in assigned_chars:
+                continue
+            if keys.is_valid_hotkey(hotkey) and keys.normalize_hotkey(hotkey) in used_keys:
+                del self.cfg["bindings"][character]
         self.cfg["order"] = [w.character for w in self.windows]
         self._save_cfg()
         self._rebuild_tree()
@@ -563,9 +581,18 @@ class App:
 
     # -------------------------------------------------------------- divers
 
-    def on_tree_double_click(self, _event):
-        character = self._selected_character()
-        if character is None:
+    def on_tree_double_click(self, event):
+        # Ignorer les double-clics hors des lignes (en-têtes, zone vide) :
+        # sinon un redimensionnement de colonne activerait la fenêtre
+        # encore sélectionnée d'un clic précédent.
+        if self.tree.identify_region(event.x, event.y) != "cell":
+            return
+        row = self.tree.identify_row(event.y)
+        if not row:
+            return
+        values = self.tree.item(row, "values")
+        character = values[2] if len(values) >= 3 else None
+        if not character:
             return
         hwnd = self.char_to_hwnd.get(character)
         if hwnd:
