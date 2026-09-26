@@ -37,10 +37,16 @@ le code ne contient aucune fonction d'injection d'entrées.
 
 ## 🚀 Installation
 
+**Le plus simple :** téléchargez ce dépôt sur votre PC (par exemple sur le
+Bureau), puis double-cliquez sur **`Installer_et_Lancer.bat`** : il vérifie
+votre environnement, installe Python automatiquement s'il manque, et lance
+l'outil.
+
+Manuellement, si vous préférez :
+
 1. Installez [Python 3](https://www.python.org/downloads/) (3.9 ou plus récent).
    Pendant l'installation, laissez cochées les options **tcl/tk** et **Add to PATH**.
-2. Téléchargez/clonez ce dépôt.
-3. Double-cliquez sur **`DofusMultiSwitch.pyw`** — c'est tout.
+2. Double-cliquez sur **`DofusMultiSwitch.pyw`** — c'est tout.
 
 ### En faire un .exe (optionnel)
 

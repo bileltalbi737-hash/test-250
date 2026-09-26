@@ -76,11 +76,16 @@ class HotkeyThread(threading.Thread):
         return list(self.failures)
 
     def stop(self, timeout=2.0):
-        """Demande l'arrêt de la boucle et attend la fin du thread."""
+        """Demande l'arrêt de la boucle et attend la fin du thread.
+
+        Renvoie True si le thread est réellement terminé (l'appelant ne
+        doit pas réenregistrer de raccourcis tant que ce n'est pas le cas).
+        """
         if not self.is_alive():
-            return
+            return True
         # S'assurer que run() a créé sa file de messages.
         self._ready.wait(timeout)
         if self._thread_id is not None:
             winapi.post_thread_quit(self._thread_id)
         self.join(timeout)
+        return not self.is_alive()

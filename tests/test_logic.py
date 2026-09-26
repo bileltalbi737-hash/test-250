@@ -131,6 +131,16 @@ class TestOrderAndCycle(unittest.TestCase):
             gamewindows.dedupe_names(["A", "B", "A", "A"]), ["A", "B", "A #2", "A #3"]
         )
 
+    def test_dedupe_names_with_preexisting_suffix(self):
+        result = gamewindows.dedupe_names(["A", "A #2", "A"])
+        self.assertEqual(len(result), len(set(result)), "les noms doivent rester uniques")
+
+    def test_character_name_containing_dofus(self):
+        self.assertEqual(
+            gamewindows.character_name("Roi - Dofus-Team - Dofus 2.73"),
+            "Roi - Dofus-Team",
+        )
+
 
 class TestConfig(unittest.TestCase):
     def test_load_missing_gives_defaults(self):

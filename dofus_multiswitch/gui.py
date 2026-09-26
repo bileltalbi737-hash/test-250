@@ -7,6 +7,7 @@ premier plan quand on appuie sur la touche. Rien d'autre.
 """
 
 import functools
+import queue
 import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
@@ -38,6 +39,10 @@ class App:
         self.armed = False
         self._last_signature = None
         self._previous_hwnd = 0  # pour le raccourci « dernière fenêtre »
+        # File d'événements venant du thread des raccourcis : celui-ci ne
+        # doit JAMAIS appeler Tcl/Tk directement (même root.after), sous
+        # peine de se bloquer en attendant la boucle d'événements.
+        self._ui_queue = queue.Queue()
 
         root.title(APP_NAME)
         root.minsize(640, 420)
@@ -48,6 +53,7 @@ class App:
         self._apply_options()
         self.refresh()
         self._schedule_auto_refresh()
+        self.root.after(100, self._poll_ui_queue)
 
         if self.cfg["options"].get("armed"):
             self.root.after(200, self.arm)
@@ -184,7 +190,27 @@ class App:
         if threading.current_thread() is threading.main_thread():
             self.status.set(text)
         else:
-            self.root.after(0, self.status.set, text)
+            self._ui_queue.put(("status", text))
+
+    def _request_highlight(self):
+        """Demande la mise à jour du surlignage (thread-safe)."""
+        if threading.current_thread() is threading.main_thread():
+            self._update_active_highlight()
+        else:
+            self._ui_queue.put(("highlight", None))
+
+    def _poll_ui_queue(self):
+        """Draine les événements postés par le thread des raccourcis."""
+        try:
+            while True:
+                kind, payload = self._ui_queue.get_nowait()
+                if kind == "status":
+                    self.status.set(payload)
+                elif kind == "highlight":
+                    self._update_active_highlight()
+        except queue.Empty:
+            pass
+        self.root.after(100, self._poll_ui_queue)
 
     def _selected_character(self):
         selection = self.tree.selection()
@@ -441,7 +467,13 @@ class App:
         if not winapi.IS_WINDOWS:
             self._set_status("Les raccourcis globaux nécessitent Windows.")
             return
-        self.disarm()
+        if not self.disarm():
+            # Ne surtout pas réenregistrer pendant que l'ancien thread
+            # détient encore les raccourcis : cela échouerait en silence.
+            self._set_status(
+                "L'ancien thread de raccourcis ne s'est pas encore arrêté — réessayez dans un instant."
+            )
+            return
         entries, skipped = self._build_entries()
         if not entries:
             self._set_status(
@@ -462,14 +494,18 @@ class App:
         self._set_status(message)
 
     def disarm(self):
+        """Arrête les raccourcis. Renvoie True si le thread est bien terminé."""
+        stopped = True
         if self.hotkey_thread is not None:
-            self.hotkey_thread.stop()
-            self.hotkey_thread = None
+            stopped = self.hotkey_thread.stop()
+            if stopped:
+                self.hotkey_thread = None  # sinon, on le garde pour réessayer
         if self.armed:
             self.armed = False
             self.btn_arm.config(text="▶  Activer les raccourcis", bg="#2e8b57",
                                 activebackground="#3cb371")
             self._set_status("Raccourcis désactivés.")
+        return stopped
 
     def _rearm_if_needed(self):
         if self.armed:
@@ -517,7 +553,7 @@ class App:
             if winapi.activate_window(hwnd):
                 if character:
                     self._set_status("Fenêtre active : %s" % character)
-                self.root.after(0, self._update_active_highlight)
+                self._request_highlight()
             else:
                 self._set_status(
                     "Impossible d'activer « %s » (fenêtre fermée ?)." % (character or hwnd)

@@ -36,10 +36,11 @@ NOT_LOGGED_LABEL = "(non connecté)"
 def looks_like_dofus(title, process_image=""):
     """Vrai si le titre (et le processus) ressemblent à un client Dofus.
 
-    `process_image` est le chemin de l'exécutable ("" si inconnu) : un
-    exécutable dont le nom commence par « dofus » est toujours accepté,
-    un navigateur/Discord est toujours refusé, et en l'absence
-    d'information on se rabat sur le titre seul.
+    `process_image` est le chemin de l'exécutable ("" si inconnu). Les
+    exclusions par titre (launcher, notre fenêtre) priment toujours ;
+    ensuite un exécutable dont le nom commence par « dofus » est accepté,
+    un navigateur/Discord est refusé, et en l'absence d'information on se
+    rabat sur le titre seul.
     """
     if not title:
         return False
@@ -68,8 +69,10 @@ def character_name(title):
     """
     if not title:
         return NOT_LOGGED_LABEL
+    # rfind : si le nom contenait lui-même « - Dofus », seule la dernière
+    # occurrence (le vrai suffixe de version) est coupée.
     for separator in (" - Dofus", " — Dofus", " – Dofus"):
-        index = title.find(separator)
+        index = title.rfind(separator)
         if index > 0:
             return title[:index].strip()
     stripped = title.strip()
@@ -79,13 +82,21 @@ def character_name(title):
 
 
 def dedupe_names(names):
-    """Rend les noms uniques : le 2e « Nom » devient « Nom #2 », etc."""
-    seen = {}
+    """Rend les noms uniques : le 2e « Nom » devient « Nom #2 », etc.
+
+    Garantit l'unicité même si un nom d'entrée contient déjà un
+    suffixe « #n ».
+    """
+    used = set()
     result = []
     for name in names:
-        count = seen.get(name, 0) + 1
-        seen[name] = count
-        result.append(name if count == 1 else "%s #%d" % (name, count))
+        candidate = name
+        suffix = 1
+        while candidate in used:
+            suffix += 1
+            candidate = "%s #%d" % (name, suffix)
+        used.add(candidate)
+        result.append(candidate)
     return result
 
 
@@ -136,5 +147,9 @@ def find_dofus_windows():
             image_cache[pid] = winapi.get_process_image(pid)
         if looks_like_dofus(title, image_cache[pid]):
             found.append(GameWindow(hwnd, title, character_name(title), pid))
+    # EnumWindows énumère selon le Z-order, qui change à chaque changement
+    # de focus : trier par (pid, hwnd) rend le dédoublonnage des homonymes
+    # (« Nom #2 ») stable d'une actualisation à l'autre.
+    found.sort(key=lambda w: (w.pid, w.hwnd))
     names = dedupe_names([w.character for w in found])
     return [w._replace(character=name) for w, name in zip(found, names)]

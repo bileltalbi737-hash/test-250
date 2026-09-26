@@ -87,7 +87,9 @@ def save(cfg, path=None):
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
             json.dump(cfg, handle, ensure_ascii=False, indent=2)
         os.replace(temp_path, path)
-    except OSError:
+    except BaseException:
+        # Quelle que soit l'erreur (OSError, TypeError...), ne pas laisser
+        # traîner le fichier temporaire.
         try:
             os.unlink(temp_path)
         except OSError:
