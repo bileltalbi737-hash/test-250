@@ -1345,9 +1345,9 @@ function openWelcome() {
   openSheet({
     title: 'Bienvenue',
     body: `<div class="welcome"><div class="art"><span></span><span></span><span></span><span></span></div>
-      <h3>Ton carnet t’attend</h3>
+      <h3>Khaoula, ton carnet t’attend</h3>
       <p>Un carnet de tâches tout doux, façon aquarelle. Tout reste sur tes appareils.</p>
-      <input class="input" id="w-name" placeholder="Ton prénom (pour te dire bonjour)" style="text-align:center;max-width:320px;margin:0 auto" autocomplete="given-name">
+      <input class="input" id="w-name" value="Khaoula" placeholder="Ton prénom (pour te dire bonjour)" style="text-align:center;max-width:320px;margin:0 auto" autocomplete="given-name">
     </div>`,
     foot: `<span class="spacer"></span><button type="button" class="btn primary" id="w-ok">${icon('sparkle')} Ouvrir le carnet</button>`,
     onMount: (el, apiW) => {
