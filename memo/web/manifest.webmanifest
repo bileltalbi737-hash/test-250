@@ -1,0 +1,16 @@
+{
+  "name": "Carnet — mon petit carnet impressionniste",
+  "short_name": "Carnet",
+  "description": "Un carnet de tâches tout doux, façon aquarelle, qui reste chez toi.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8f3e9",
+  "theme_color": "#f8f3e9",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

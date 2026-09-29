@@ -1,0 +1,13 @@
+{
+  "name": "carnet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Carnet — to-do list impressionniste, locale et synchronisée entre Mac et iPhone via un petit serveur maison.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "icons": "node tools/gen-icons.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}
